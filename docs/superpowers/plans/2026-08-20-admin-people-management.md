@@ -1280,7 +1280,7 @@ Create `src/lib/admin/actions.ts`:
 ```typescript
 "use server";
 
-import { revalidatePath } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { updateProfileStatus } from "./status";
 
@@ -1341,7 +1341,7 @@ Create `src/app/admin/students/[id]/actions.ts`:
 ```typescript
 "use server";
 
-import { revalidatePath } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function updateStudent(_prevState: { error: string | null }, formData: FormData) {
@@ -1803,7 +1803,7 @@ Create `src/app/admin/lecturers/[id]/actions.ts`:
 ```typescript
 "use server";
 
-import { revalidatePath } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function updateLecturer(_prevState: { error: string | null }, formData: FormData) {
