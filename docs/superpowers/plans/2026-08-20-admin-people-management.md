@@ -354,10 +354,16 @@ describe("students RLS", () => {
     expect(updated?.[0]?.batch).toBe("10th");
   });
 
-  it("returns nothing to an anonymous client", async () => {
+  it("denies an anonymous client outright (no table grant — fails closed before RLS)", async () => {
+    // There is no legitimate use case for anonymous access to students, so
+    // (unlike authenticated/service_role) anon gets no table-level GRANT at
+    // all. Postgres rejects the query before RLS is even evaluated — a
+    // flat permission error, not an empty-but-successful result. This is a
+    // stricter guarantee than "RLS filters to zero rows" and is deliberate.
     const anon = createClient(url, anonKey);
-    const { data } = await anon.from("students").select("*");
-    expect(data).toEqual([]);
+    const { data, error } = await anon.from("students").select("*");
+    expect(data).toBeNull();
+    expect(error).not.toBeNull();
   });
 
   afterAll(async () => {
