@@ -17,4 +17,8 @@ describe("resolveGuardRedirect", () => {
   it("redirects an unrecognized role to /login", () => {
     expect(resolveGuardRedirect({ role: "bogus" }, "student")).toBe("/login");
   });
+
+  it("redirects an inactive profile to /login even if the role matches", () => {
+    expect(resolveGuardRedirect({ role: "student", status: "inactive" }, "student")).toBe("/login");
+  });
 });

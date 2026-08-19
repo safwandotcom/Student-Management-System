@@ -173,7 +173,7 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
-enable_signup = true
+enable_signup = false
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
@@ -218,6 +218,14 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
+# NOTE: despite the label, this key maps to GOTRUE_EXTERNAL_EMAIL_ENABLED,
+# which disables the entire email/password provider (login included, not
+# just signup) — verified empirically against the local gotrue:v2.195.0
+# image. Turning it off here would break password sign-in for every
+# already-provisioned account, so signup is closed solely via the top-level
+# [auth].enable_signup = false above (-> GOTRUE_DISABLE_SIGNUP=true), which
+# blocks only the public /signup endpoint and leaves login and the
+# service-role admin-create-user flow unaffected.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.

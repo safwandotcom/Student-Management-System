@@ -18,13 +18,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  let profile: { role: string; full_name: string } | null = null;
+  let profile: { role: string; full_name: string; status: string } | null = null;
   if (user) {
-    const { data } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).single();
+    const { data } = await supabase.from("profiles").select("role, full_name, status").eq("id", user.id).single();
     profile = data;
   }
 
   const redirectTo = resolveGuardRedirect(profile, "admin");
+  if (redirectTo === "/login" && user) {
+    // Signed in but no usable profile (missing row or inactive) — clear the session
+    // so /login doesn't just bounce them right back here.
+    await supabase.auth.signOut();
+  }
   if (redirectTo) redirect(redirectTo);
 
   return (

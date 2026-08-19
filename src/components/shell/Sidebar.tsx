@@ -9,7 +9,7 @@ export function Sidebar({ items, roleLabel }: { items: NavItem[]; roleLabel: str
   const pathname = usePathname();
 
   return (
-    <nav className="flex h-full w-60 flex-col border-r border-ink-200 bg-ink-900 text-ink-100">
+    <nav className="flex h-full w-60 shrink-0 flex-col border-r border-ink-200 bg-ink-900 text-ink-100">
       <div className="border-b border-ink-800 px-5 py-4">
         <p className="text-sm font-semibold text-white">Campus</p>
         <p className="text-xs text-ink-400">{roleLabel}</p>

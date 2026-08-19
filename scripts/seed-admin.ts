@@ -30,7 +30,8 @@ export async function seedAdmin(email: string, password: string, fullName: strin
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName, role: "admin" },
+    user_metadata: { full_name: fullName },
+    app_metadata: { role: "admin" },
   });
 
   if (error) throw error;

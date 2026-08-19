@@ -29,7 +29,8 @@ describe("profiles RLS", () => {
     });
     const adm = await admin.auth.admin.createUser({
       email: adminEmail, password, email_confirm: true,
-      user_metadata: { full_name: "Admin One", role: "admin" },
+      user_metadata: { full_name: "Admin One" },
+      app_metadata: { role: "admin" },
     });
     studentAId = a.data.user!.id;
     studentBId = b.data.user!.id;
@@ -59,6 +60,43 @@ describe("profiles RLS", () => {
 
     expect(error).toBeNull();
     expect(data).toHaveLength(3);
+  });
+
+  it("blocks public self-signup entirely now that enable_signup is disabled", async () => {
+    // Primary fix: the anon-key signup endpoint is disabled project-wide, so
+    // nobody can create ANY account (let alone an admin one) without going
+    // through the admin-provisioned flow.
+    const client = createClient(url, anonKey);
+    const email = `signup-probe-${Date.now()}@example.com`;
+    const { data, error } = await client.auth.signUp({
+      email,
+      password: "TestPassword123!",
+      options: { data: { full_name: "Signup Probe", role: "admin" } },
+    });
+    expect(error).not.toBeNull();
+    expect(data.user).toBeNull();
+  });
+
+  it("ignores a client-supplied role in user_metadata, even via privileged creation", async () => {
+    // Defense-in-depth: the handle_new_user() trigger must source `role`
+    // only from raw_app_meta_data (service-role/admin-API-writable), never
+    // from raw_user_meta_data (client-writable). This holds independently of
+    // enable_signup, so it still protects an invite-flow re-enabling signup
+    // later (phase 2).
+    const email = `trigger-probe-${Date.now()}@example.com`;
+    const { data, error } = await admin.auth.admin.createUser({
+      email,
+      password: "TestPassword123!",
+      email_confirm: true,
+      user_metadata: { full_name: "Trigger Probe", role: "admin" }, // no app_metadata.role set
+    });
+    expect(error).toBeNull();
+    const userId = data.user!.id;
+
+    const { data: profile } = await admin.from("profiles").select("role").eq("id", userId).single();
+    expect(profile?.role).toBe("student"); // NOT "admin" — trigger must not trust user_metadata
+
+    await admin.auth.admin.deleteUser(userId);
   });
 
   afterAll(async () => {
