@@ -2,8 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export async function updateLecturer(_prevState: { error: string | null }, formData: FormData) {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Admin access required." };
+  }
+
   const id = String(formData.get("id") ?? "");
   const department = String(formData.get("department") ?? "").trim();
   const designation = String(formData.get("designation") ?? "").trim();

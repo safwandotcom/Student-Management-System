@@ -17,12 +17,17 @@ export async function inviteUser(
 ): Promise<{ id: string }> {
   const supabase = adminClient();
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) {
+    throw new Error("NEXT_PUBLIC_SITE_URL must be set to send invites.");
+  }
+
   // Step 1: create the invited auth user. `data` here becomes user_metadata,
   // which is client-writable and must never carry authorization-relevant
   // fields — full_name is fine, role is not.
   const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
     data: { full_name: fullName },
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000"}/accept-invite`,
+    redirectTo: `${siteUrl}/accept-invite`,
   });
   if (error) throw new Error(error.message);
 
@@ -38,4 +43,9 @@ export async function inviteUser(
   if (metaError) throw new Error(metaError.message);
 
   return { id: userId };
+}
+
+export async function deleteInvitedUser(userId: string): Promise<void> {
+  const supabase = adminClient();
+  await supabase.auth.admin.deleteUser(userId);
 }

@@ -23,7 +23,14 @@ npm run seed:admin -- you@example.com "YourPassword1!" "Your Name"
 npm run dev
 ```
 
-Visit http://localhost:3000 and sign in with the admin account you seeded.
+Also set `NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000` in `.env.local`. It must match
+the host Supabase issues sessions for (`127.0.0.1`, not `localhost`), or invite/
+accept-invite redirect links will break — see `next.config.ts` for why.
+
+Visit http://127.0.0.1:3000 and sign in with the admin account you seeded.
+
+Local invite and auth emails don't actually get sent — they land in Mailpit at
+http://127.0.0.1:54324, viewable in the browser.
 
 ## Testing
 

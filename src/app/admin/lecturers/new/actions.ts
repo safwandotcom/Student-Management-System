@@ -2,9 +2,16 @@
 
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { inviteUser } from "@/lib/auth/invite";
+import { inviteUser, deleteInvitedUser } from "@/lib/auth/invite";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export async function createLecturer(_prevState: { error: string | null }, formData: FormData) {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Admin access required." };
+  }
+
   const fullName = String(formData.get("full_name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const department = String(formData.get("department") ?? "").trim();
@@ -30,7 +37,11 @@ export async function createLecturer(_prevState: { error: string | null }, formD
   });
 
   if (error) {
-    return { error: `Invite sent, but saving lecturer details failed: ${error.message}` };
+    await deleteInvitedUser(profileId);
+    return {
+      error:
+        "Could not save lecturer details — the invite has been cancelled. Please check the details and try again.",
+    };
   }
 
   redirect("/admin/lecturers");

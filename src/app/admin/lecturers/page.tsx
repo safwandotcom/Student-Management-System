@@ -26,6 +26,7 @@ export default async function LecturersPage({
     .from("lecturers")
     .select("id, department, designation, profiles(full_name, status)", { count: "exact" })
     .order("department", { ascending: true })
+    .order("id", { ascending: true })
     .range(from, to);
 
   if (search) {

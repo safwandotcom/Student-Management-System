@@ -37,6 +37,7 @@ export default function AcceptInvitePage() {
         setErrorMessage(error.message);
       } else {
         setStatus("ready");
+        window.history.replaceState(null, "", window.location.pathname);
       }
     }
 

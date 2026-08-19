@@ -27,6 +27,7 @@ export default async function StudentsPage({
     .from("students")
     .select("id, student_id, program, batch, profiles(full_name, status)", { count: "exact" })
     .order("student_id", { ascending: true })
+    .order("id", { ascending: true })
     .range(from, to);
 
   if (search) {
