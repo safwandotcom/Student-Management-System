@@ -414,6 +414,12 @@ create policy "students: admin update"
 -- so no delete grant either — deactivation goes through profiles.status, not
 -- row deletion.
 grant select, insert, update on public.students to authenticated;
+
+-- This local (non-hosted) Supabase stack does not auto-grant table privileges
+-- to service_role either (unlike the hosted platform) — mirrors the exact gap
+-- Foundation's profiles migration hit and fixed the same way. Test fixtures
+-- and any future server-side service-role code need this.
+grant select, insert, update, delete on public.students to service_role;
 ```
 
 - [ ] **Step 4: Apply the migration**
@@ -599,6 +605,13 @@ create policy "lecturers: admin update"
   with check (public.current_user_role() = 'admin');
 
 grant select, insert, update on public.lecturers to authenticated;
+
+-- This local (non-hosted) Supabase stack does not auto-grant table privileges
+-- to service_role either (unlike the hosted platform) — mirrors the exact gap
+-- Foundation's profiles migration hit and fixed the same way, and the same
+-- fix Task 2 needed for the students table. Test fixtures and any future
+-- server-side service-role code need this.
+grant select, insert, update, delete on public.lecturers to service_role;
 ```
 
 - [ ] **Step 4: Apply the migration**
