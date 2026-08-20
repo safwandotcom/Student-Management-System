@@ -18,10 +18,20 @@ export default async function StudentDashboardPage() {
     .eq("profile_id", user!.id)
     .single();
 
+  if (!studentRow) {
+    return (
+      <Card>
+        <p className="text-sm text-ink-500">
+          Your student record is not set up yet. Please contact the administrator.
+        </p>
+      </Card>
+    );
+  }
+
   const { count: enrollmentCount } = await supabase
     .from("enrollments")
     .select("id", { count: "exact", head: true })
-    .eq("student_id", studentRow?.id ?? "");
+    .eq("student_id", studentRow.id);
 
   const quickLinks = [
     { label: "Courses", href: "/student/courses", description: `${enrollmentCount ?? 0} enrolled` },

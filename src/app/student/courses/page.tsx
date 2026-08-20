@@ -20,10 +20,20 @@ export default async function StudentCoursesPage() {
     .eq("profile_id", user!.id)
     .single();
 
+  if (!studentRow) {
+    return (
+      <Card>
+        <p className="text-sm text-ink-500">
+          Your student record is not set up yet. Please contact the administrator.
+        </p>
+      </Card>
+    );
+  }
+
   const { data } = await supabase
     .from("enrollments")
     .select("id, course_offerings(term, courses(code, title, credits), lecturers(profiles(full_name)))")
-    .eq("student_id", studentRow?.id ?? "")
+    .eq("student_id", studentRow.id)
     .order("id", { ascending: true });
   const enrollments = (data ?? []) as unknown as EnrollmentRow[];
 
