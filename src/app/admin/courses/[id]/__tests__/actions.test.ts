@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
-import { updateCourse, createOffering } from "../actions";
+import { updateCourse, createOffering, enrollStudent } from "../actions";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -42,6 +42,7 @@ describe("updateCourse and createOffering authorization", () => {
   let adminId: string, studentId: string, lecturerProfileId: string, lecturerRowId: string;
   let adminEmail: string, studentEmail: string, lecturerEmail: string;
   let courseId: string;
+  let offeringId: string, studentRowId: string;
   const originalTitle = "Original Title";
 
   beforeAll(async () => {
@@ -88,6 +89,20 @@ describe("updateCourse and createOffering authorization", () => {
       .select("id")
       .single();
     courseId = course!.id;
+
+    const { data: offering } = await admin
+      .from("course_offerings")
+      .insert({ course_id: courseId, lecturer_id: lecturerRowId, term: `ENROLL-TERM-${stamp}` })
+      .select("id")
+      .single();
+    offeringId = offering!.id;
+
+    const { data: studentRow } = await admin
+      .from("students")
+      .insert({ profile_id: studentId, student_id: `S-${stamp}`, program: "CS", batch: "2026" })
+      .select("id")
+      .single();
+    studentRowId = studentRow!.id;
   });
 
   it("updateCourse rejects a non-admin caller and changes nothing", async () => {
@@ -122,6 +137,23 @@ describe("updateCourse and createOffering authorization", () => {
       .select("id")
       .eq("course_id", courseId)
       .eq("term", term);
+    expect(data).toEqual([]);
+  });
+
+  it("enrollStudent rejects a non-admin caller and writes nothing", async () => {
+    await signInAs(studentEmail, password);
+    const formData = new FormData();
+    formData.set("course_id", courseId);
+    formData.set("offering_id", offeringId);
+    formData.set("student_id", studentRowId);
+
+    const result = await enrollStudent({ error: null }, formData);
+    expect(result.error).toBe("Admin access required.");
+
+    const { data } = await admin
+      .from("enrollments")
+      .select("id")
+      .eq("offering_id", offeringId);
     expect(data).toEqual([]);
   });
 

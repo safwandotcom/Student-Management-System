@@ -67,3 +67,35 @@ export async function createOffering(_prevState: { error: string | null }, formD
   revalidatePath(`/admin/courses/${courseId}`);
   return { error: null };
 }
+
+export async function enrollStudent(_prevState: { error: string | null }, formData: FormData) {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Admin access required." };
+  }
+
+  const courseId = String(formData.get("course_id") ?? "");
+  const offeringId = String(formData.get("offering_id") ?? "");
+  const studentId = String(formData.get("student_id") ?? "");
+
+  if (!courseId || !offeringId || !studentId) {
+    return { error: "Please select a student." };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("enrollments")
+    .insert({ student_id: studentId, offering_id: offeringId });
+
+  if (error) {
+    return {
+      error: error.message.includes("duplicate")
+        ? "This student is already enrolled in this offering."
+        : error.message,
+    };
+  }
+
+  revalidatePath(`/admin/courses/${courseId}`);
+  return { error: null };
+}
