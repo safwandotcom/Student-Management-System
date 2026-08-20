@@ -35,3 +35,35 @@ export async function updateCourse(_prevState: { error: string | null }, formDat
   revalidatePath(`/admin/courses/${id}`);
   return { error: null };
 }
+
+export async function createOffering(_prevState: { error: string | null }, formData: FormData) {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Admin access required." };
+  }
+
+  const courseId = String(formData.get("course_id") ?? "");
+  const lecturerId = String(formData.get("lecturer_id") ?? "");
+  const term = String(formData.get("term") ?? "").trim();
+
+  if (!courseId || !lecturerId || !term) {
+    return { error: "Please select a lecturer and enter a term." };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("course_offerings")
+    .insert({ course_id: courseId, lecturer_id: lecturerId, term });
+
+  if (error) {
+    return {
+      error: error.message.includes("duplicate")
+        ? "This lecturer is already assigned to this course for this term."
+        : error.message,
+    };
+  }
+
+  revalidatePath(`/admin/courses/${courseId}`);
+  return { error: null };
+}
