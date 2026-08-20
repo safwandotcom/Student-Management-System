@@ -31,7 +31,7 @@ export default async function StudentCoursesPage() {
     <Card className="space-y-4">
       <div>
         <h1 className="text-lg font-semibold text-ink-900">My Courses</h1>
-        <p className="text-sm text-ink-500">Courses you are enrolled in this term.</p>
+        <p className="text-sm text-ink-500">Courses you are enrolled in.</p>
       </div>
       {enrollments.length === 0 ? (
         <p className="text-sm text-ink-500">You are not enrolled in any courses yet.</p>

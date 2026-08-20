@@ -24,7 +24,7 @@ export default async function StudentDashboardPage() {
     .eq("student_id", studentRow?.id ?? "");
 
   const quickLinks = [
-    { label: "Courses", href: "/student/courses", description: `${enrollmentCount ?? 0} enrolled this term` },
+    { label: "Courses", href: "/student/courses", description: `${enrollmentCount ?? 0} enrolled` },
     { label: "Attendance", href: "/student/attendance", description: "Coming soon" },
     { label: "Results", href: "/student/results", description: "Coming soon" },
     { label: "Fees & Payments", href: "/student/payments", description: "Coming soon" },
@@ -37,7 +37,7 @@ export default async function StudentDashboardPage() {
       <Card>
         <h1 className="text-lg font-semibold text-ink-900">Welcome, {profile?.full_name ?? "Student"}</h1>
         <p className="text-sm text-ink-500">
-          You are enrolled in {enrollmentCount ?? 0} course{enrollmentCount === 1 ? "" : "s"} this term.
+          You are enrolled in {enrollmentCount ?? 0} course{enrollmentCount === 1 ? "" : "s"}.
         </p>
       </Card>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
