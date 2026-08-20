@@ -74,6 +74,11 @@ describe("course_offerings RLS", () => {
     const { data, error } = await client.from("course_offerings").select("*").eq("id", offeringId);
     expect(error).toBeNull();
     expect(data).toEqual([]);
+
+    const insertAttempt = await client
+      .from("course_offerings")
+      .insert({ course_id: courseId, lecturer_id: lecturerRowId, term: "RLS-STUDENT-ATTEMPT" });
+    expect(insertAttempt.error).not.toBeNull();
   });
 
   it("denies an anonymous client outright (no table grant — fails closed before RLS)", async () => {
