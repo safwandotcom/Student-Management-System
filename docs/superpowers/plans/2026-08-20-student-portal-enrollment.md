@@ -650,10 +650,13 @@ git commit -m "feat: add student enrollment UI to course detail page"
 
 ---
 
-### Task 5: Student portal shell — layout, guard, nav, placeholder pages
+### Task 5: Student portal shell — placeholder pages (layout already exists)
+
+**Plan correction (discovered during Task 3, ruled before this task's dispatch):** `src/app/student/layout.tsx` and `src/app/student/page.tsx` already exist — Foundation built placeholder role-guard layouts and dashboard stubs for all three portals (commits `2bff19f`, `79f5e47`, `e14e07a` on `main`, predating this plan). This was missed when the plan was written. Read `src/app/student/layout.tsx` now: it already does everything this task's Step 1 originally specified — `resolveGuardRedirect(profile, "student")`, the sign-out-on-orphaned-session handling, `PortalShell` with all 7 `NAV_ITEMS` (`Dashboard`, `My Courses`, `Attendance`, `Results`, `Fees & Payments`, `Profile`, `Support Tickets` — note Foundation's version says "My Courses" where this plan originally said "Courses"; that wording difference is cosmetic and not worth changing). **Do not recreate or overwrite this file.** If you read it and find it does NOT already match this description, stop and report NEEDS_CONTEXT rather than guessing — that would mean this correction itself is stale.
+
+`src/app/student/page.tsx` also already exists as a placeholder (a static "Welcome to your Student Dashboard" card) — Task 6 (a later task, not this one) replaces it with real data. Leave it alone in this task.
 
 **Files:**
-- Create: `src/app/student/layout.tsx`
 - Create: `src/components/ui/ComingSoon.tsx`
 - Create: `src/app/student/attendance/page.tsx`
 - Create: `src/app/student/results/page.tsx`
@@ -661,55 +664,10 @@ git commit -m "feat: add student enrollment UI to course detail page"
 - Create: `src/app/student/tickets/page.tsx`
 
 **Interfaces:**
-- Consumes: `resolveGuardRedirect` (`src/lib/auth/guard.ts`), `PortalShell` (`src/components/shell/PortalShell.tsx`), `NavItem` (`src/lib/nav.ts`) — all already exist, all already generic across roles, all unchanged by this task.
-- Produces: the `/student/*` route group's layout and guard. Tasks 6/7/8 add real pages (`/student`, `/student/courses`, `/student/profile`) inside this same route group — they rely on this layout existing first.
+- Consumes: nothing new — `src/app/student/layout.tsx` (pre-existing) already provides the guard/nav for every page this task creates.
+- Produces: the 4 placeholder pages. Tasks 6/7/8 add real pages (`/student`, `/student/courses`, `/student/profile`) in the same route group — independent files, no dependency on this task's new files.
 
-- [ ] **Step 1: Write `src/app/student/layout.tsx`**
-
-Read `src/app/admin/layout.tsx` in full first — this is a structural copy with a different `requiredRole` and `NAV_ITEMS`.
-
-```tsx
-import { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { resolveGuardRedirect } from "@/lib/auth/guard";
-import { PortalShell } from "@/components/shell/PortalShell";
-
-const NAV_ITEMS = [
-  { label: "Dashboard", href: "/student" },
-  { label: "Courses", href: "/student/courses" },
-  { label: "Attendance", href: "/student/attendance" },
-  { label: "Results", href: "/student/results" },
-  { label: "Fees & Payments", href: "/student/payments" },
-  { label: "Profile", href: "/student/profile" },
-  { label: "Support Tickets", href: "/student/tickets" },
-];
-
-export default async function StudentLayout({ children }: { children: ReactNode }) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  let profile: { role: string; full_name: string; status: string } | null = null;
-  if (user) {
-    const { data } = await supabase.from("profiles").select("role, full_name, status").eq("id", user.id).single();
-    profile = data;
-  }
-
-  const redirectTo = resolveGuardRedirect(profile, "student");
-  if (redirectTo === "/login" && user) {
-    await supabase.auth.signOut();
-  }
-  if (redirectTo) redirect(redirectTo);
-
-  return (
-    <PortalShell navItems={NAV_ITEMS} roleLabel="Student Portal" userLabel={profile!.full_name}>
-      {children}
-    </PortalShell>
-  );
-}
-```
-
-- [ ] **Step 2: Write the shared `ComingSoon` component**
+- [ ] **Step 1: Write the shared `ComingSoon` component**
 
 ```tsx
 import { Card } from "@/components/ui/Card";
@@ -726,7 +684,7 @@ export function ComingSoon({ title, description }: { title: string; description:
 
 Save as `src/components/ui/ComingSoon.tsx`.
 
-- [ ] **Step 3: Write the four placeholder pages**
+- [ ] **Step 2: Write the four placeholder pages**
 
 `src/app/student/attendance/page.tsx`:
 ```tsx
@@ -764,23 +722,25 @@ export default function TicketsPage() {
 }
 ```
 
-- [ ] **Step 4: Verify manually**
+- [ ] **Step 3: Verify manually**
 
-Run the dev server (PowerShell). Sign in as a student (create one via the admin UI if none exists in your local seed data, or check existing seed/fixture data from prior phases). Confirm the sidebar shows all 7 items, and each of the 4 placeholder routes renders its card without error. Confirm signing in as a non-student (e.g. admin) and visiting `/student` redirects away (per `resolveGuardRedirect`), and that an unauthenticated visit to `/student` redirects to `/login`.
+Run the dev server (PowerShell). Sign in as a student (create one via the admin UI if none exists in your local seed data, or check existing seed/fixture data from prior phases). Confirm the sidebar (from the pre-existing layout) shows all 7 items, and each of the 4 new placeholder routes renders its card without error. Confirm signing in as a non-student (e.g. admin) and visiting `/student` redirects away (per `resolveGuardRedirect`), and that an unauthenticated visit to `/student` redirects to `/login` — this behavior is pre-existing (from Foundation's layout), not new, but confirm it still works since it's this task's guard for the 4 new pages too.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/app/student/layout.tsx src/components/ui/ComingSoon.tsx src/app/student/attendance/page.tsx src/app/student/results/page.tsx src/app/student/payments/page.tsx src/app/student/tickets/page.tsx
-git commit -m "feat: add student portal shell with placeholder pages"
+git add src/components/ui/ComingSoon.tsx src/app/student/attendance/page.tsx src/app/student/results/page.tsx src/app/student/payments/page.tsx src/app/student/tickets/page.tsx
+git commit -m "feat: add student portal placeholder pages for attendance/results/payments/tickets"
 ```
 
 ---
 
 ### Task 6: Student Dashboard page
 
+**Plan correction (see Task 5's note):** `src/app/student/page.tsx` already exists as a Foundation-era static placeholder (a "Welcome to your Student Dashboard" card with no queries). This task replaces its content entirely with the real implementation below — read the existing file first, then overwrite it (this is a Modify, not a Create, even though the plan originally listed it as Create).
+
 **Files:**
-- Create: `src/app/student/page.tsx`
+- Modify: `src/app/student/page.tsx` (replaces the existing placeholder content entirely)
 
 **Interfaces:**
 - Consumes: `public.students` (own row, via existing "read own row" policy), `public.enrollments` (own rows, via Task 1's "student select own" policy).
