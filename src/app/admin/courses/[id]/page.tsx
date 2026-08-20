@@ -21,7 +21,7 @@ interface OfferingRow {
 
 interface LecturerOption {
   id: string;
-  profiles: { full_name: string } | null;
+  profiles: { full_name: string; status: string } | null;
 }
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,8 +46,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
   const { data: lecturersData } = await supabase
     .from("lecturers")
-    .select("id, profiles(full_name)")
-    .order("id", { ascending: true });
+    .select("id, profiles!inner(full_name, status)")
+    .eq("profiles.status", "active")
+    .order("profiles(full_name)", { ascending: true });
   const lecturerOptions = ((lecturersData ?? []) as unknown as LecturerOption[]).map((lecturer) => ({
     id: lecturer.id,
     full_name: lecturer.profiles?.full_name ?? "Unknown",
